@@ -1,12 +1,10 @@
 package dev.katha.library.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.katha.library.model.Book;
 import dev.katha.library.model.Checkout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,9 +12,6 @@ import org.springframework.web.client.RestClient;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
-
-
 
 @Service
 public class BookService {
@@ -57,7 +52,6 @@ public class BookService {
             userEmail,
             LocalDate.now().toString(),
             LocalDate.now().plusDays(7).toString());
-//        checkoutRepository.save(checkout);
 
         checkoutRestClient.post()
             .uri("/checkouts")
@@ -71,8 +65,6 @@ public class BookService {
     }
 
     public Boolean checkoutBookByUser(String userEmail, Long bookId) {
-//        Checkout checkoutbook = checkoutRestClient.get().uri("/checkouts/search/findByUserEmailAndBookId?userEmail={userEmail}&bookId={bookId}", userEmail, bookId).accept(MediaType.APPLICATION_JSON).retrieve().body(Checkout.class);
-//        ResponseEntity<String> result = checkoutRestClient.get().uri("/checkouts/search/findByUserEmailAndBookId?userEmail={userEmail}&bookId={bookId}", userEmail, bookId).retrieve().toEntity(String.class);
         ResponseEntity<Object> result = checkoutRestClient
                 .get()
                 .uri("/checkouts/search/findByUserEmailAndBookId?userEmail={userEmail}&bookId={bookId}", userEmail, bookId).accept(MediaTypes.HAL_JSON).retrieve().toEntity(Object.class);
@@ -85,29 +77,28 @@ public class BookService {
         Object entities = result.getBody();
         LinkedHashMap<String, Object> map = (LinkedHashMap<String, Object>) entities;
         LinkedHashMap<String, ArrayList> embedded = (LinkedHashMap<String, ArrayList>) map.get("_embedded");
-//        ObjectMapper mapper = new ObjectMapper();
         List checkouts =  embedded.get("checkouts");
-        LinkedHashMap<String, Object> checkoutobj = (LinkedHashMap<String, Object>) checkouts.get(0);
-        Checkout checkout = new Checkout(((Integer)checkoutobj.get("bookId")).longValue(), checkoutobj.get("userEmail").toString(), checkoutobj.get("checkoutDate").toString(), checkoutobj.get("returnDate").toString());
-        checkout.setId(((Integer)checkoutobj.get("id")).longValue());
-        if(checkout.getId() != null) {
-            return true;
+        if(!checkouts.isEmpty()) {
+            LinkedHashMap<String, Object> checkoutobj = (LinkedHashMap<String, Object>) checkouts.get(0);
+            Checkout checkout = new Checkout(((Integer) checkoutobj.get("bookId")).longValue(), checkoutobj.get("userEmail").toString(), checkoutobj.get("checkoutDate").toString(), checkoutobj.get("returnDate").toString());
+            checkout.setId(((Integer) checkoutobj.get("id")).longValue());
+            return checkout.getId() != null;
         }
         return false;
-
     }
 
     public int currentLoansCount(String userEmail) {
 //        return checkoutRepository.findBooksByUserEmail(userEmail).size();
-        ResponseEntity<Object> result = checkoutRestClient
-                .get()
-                .uri("/checkouts/search/countAllByUserEmail?userEmail={userEmail}", userEmail).accept(MediaTypes.HAL_JSON).retrieve().toEntity(Object.class);
-
+        ResponseEntity<Object> result = checkoutRestClient.get()
+                .uri("/checkouts/search/countAllByUserEmail?userEmail={userEmail}", userEmail)
+                .accept(MediaTypes.HAL_JSON).retrieve().toEntity(Object.class);
         System.out.println("Response status: " + result.getStatusCode());
         System.out.println("Response headers: " + result.getHeaders());
         System.out.println("Contents: " + result.getBody());
         if(result.hasBody()) {
-            return Integer.parseInt(result.getBody().toString());
+            int count = Integer.parseInt(result.getBody().toString());
+            System.out.println(count);
+            return count;
         } else {
             return 0; // TODO: Replace this line with exception handling
         }

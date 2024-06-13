@@ -17,7 +17,7 @@ public class BookController {
 
     @PutMapping("/secure/checkout")
     public Book checkoutBook(@RequestHeader(value = "Authorization") String token, @RequestParam Long bookId) throws Exception {
-        String userEmail = "jbonu25@gmail.com";
+        String userEmail = ExtractJWT.payloadJWTExtraction(token, "\"sub\"");
         return bookService.checkoutBook(userEmail, bookId);
     }
 

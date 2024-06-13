@@ -23,10 +23,12 @@ export const BookCheckoutPage = () => {
     const [currentLoansCount, setCurrentLoansCount] = useState(0);
     const [isLoadingCurrentLoansCount, setIsLoadingCurrentLoansCount] = useState(true);
 
+    // Is book checkout ?
+    const [isCheckedOut,setIsCheckedOut] = useState(false);
+    const [isLoadingBookCheckedOut, setIsLoadingBookCheckedOut] = useState(true);
+
     // Book to lookup reviews
     const bookId = (window.location.pathname).split('/')[2];
-
-
 
     useEffect(() => {
         const fetchBook = async () => {
@@ -52,7 +54,7 @@ export const BookCheckoutPage = () => {
             setIsLoading(false);
             setHttpError(error.message);
         })
-    }, [])
+    }, [isCheckedOut])
 
     useEffect(() => {
         const fetchBookReviews = async () => {
@@ -115,9 +117,36 @@ export const BookCheckoutPage = () => {
             setIsLoadingCurrentLoansCount(false);
             setHttpError(error.message);
         })
+    }, [authState, isCheckedOut]);
+
+    useEffect(() => {
+        const fetchUserCheckedOutBook = async () => {
+            if(authState && authState.isAuthenticated) {
+                const checkoutBookUrl = `http://localhost:8083/api/books/secure/ischeckedout/byuser?bookId=${bookId}`;
+                const requestOptions = {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${authState.accessToken?.accessToken}`,
+                        'Content-Type' : 'application/json'
+                    }
+                };
+                const bookCheckedOut = await fetch(checkoutBookUrl, requestOptions);
+
+                if(!bookCheckedOut.ok) {
+                    throw new Error('Something wrong');
+                }
+                const checkedOutBookResponseJson = await bookCheckedOut.json();
+                setIsCheckedOut(checkedOutBookResponseJson);
+            }
+            setIsLoadingBookCheckedOut(false);
+        }
+        fetchUserCheckedOutBook().catch((error: any) => {
+          setIsLoadingBookCheckedOut(false);
+          setHttpError(error.message);
+        })
     }, [authState]);
 
-    if(isLoading || isLoadingReview) {
+    if(isLoading || isLoadingReview || isLoadingBookCheckedOut || isLoadingCurrentLoansCount) {
         return (
             <SpinnerLoading/>
         )
@@ -129,6 +158,22 @@ export const BookCheckoutPage = () => {
                 <p>{httpError}</p>
             </div>
         )
+    }
+
+    async function checkoutBook() {
+        const url = `http://localhost:8083/api/books/secure/checkout?bookId=${book?.id}`;
+        const requestOptions = {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${authState?.accessToken?.accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        };
+        const checkoutResponse = await fetch(url, requestOptions);
+        if (!checkoutResponse.ok) {
+            throw new Error('Something went wrong!');
+        }
+        setIsCheckedOut(true);
     }
 
     return (
@@ -151,7 +196,9 @@ export const BookCheckoutPage = () => {
                             <StarsReview Rating={4.5} size={32}/>
                         </div>
                     </div>
-                    <CheckoutAndReviewBox book={book} mobile={false} currentLoansCount={currentLoansCount}/>
+                    <CheckoutAndReviewBox book={book} mobile={false} currentLoansCount={currentLoansCount}
+                        isAuthenticated={authState?.isAuthenticated} isCheckedOut={isCheckedOut}
+                        checkoutBook={checkoutBook} />
                     <hr/>
                     <LatestReviews reviews={reviews} bookId={book?.id} mobile={true}/>
                 </div>
@@ -174,7 +221,10 @@ export const BookCheckoutPage = () => {
                         <StarsReview Rating={totalStars} size={32}/>
                     </div>
                 </div>
-                <CheckoutAndReviewBox book={book} mobile={true} currentLoansCount={currentLoansCount}/>
+                <CheckoutAndReviewBox book={book} mobile={true} currentLoansCount={currentLoansCount}
+                    isAuthenticated={authState?.isAuthenticated} isCheckedOut={isCheckedOut}
+                    checkoutBook={checkoutBook} />
+                <hr />
                 <hr/>
                 <LatestReviews reviews={reviews} bookId={book?.id} mobile={true} />
             </div>
