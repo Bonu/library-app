@@ -13,7 +13,9 @@ Functionalities implemented:
 2. Logout using Okta
 3. Rest API call
 4. Backend - Enable distributed tracing
+5. Distributed Rate limit using Bucket4j and Redis based on user Id for multiple Spring Boot server instances
 
+-----------------------------------------------------------------------
 
 ### `npm start`
 

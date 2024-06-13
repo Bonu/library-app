@@ -1,13 +1,11 @@
-package dev.katha.library;
+package dev.katha.library.checkout;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class LibraryAppApplication {
-
+public class LibraryCheckoutAPI {
 	public static void main(String[] args) {
-		SpringApplication.run(LibraryAppApplication.class, args);
+		SpringApplication.run(LibraryCheckoutAPI.class, args);
 	}
-
 }

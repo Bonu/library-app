@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class LibraryReviewApp {
+public class LibraryReviewAPI {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LibraryReviewApp.class, args);
+		SpringApplication.run(LibraryReviewAPI.class, args);
 	}
 
 }

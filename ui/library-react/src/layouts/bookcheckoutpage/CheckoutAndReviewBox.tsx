@@ -2,8 +2,8 @@ import React from "react";
 import BookModel from "../../models/BookModel";
 import {Link} from "react-router-dom";
 
-export const CheckoutAndReviewBox: React.FC<{ book: BookModel | undefined, mobile: boolean}>
-    = (props) => {
+export const CheckoutAndReviewBox: React.FC<{ book: BookModel | undefined, mobile: boolean,
+    currentLoansCount: number}> = (props) => {
 
     function buttonRender() {
         return (<Link to={'/login'} className='btn btn-success btn-lg'>Sign in</Link>)
